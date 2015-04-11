@@ -12,7 +12,8 @@ module MyWarehouse
       {'uuid' => i.xpath('uuid').text(),'groupUuid' => i.xpath('groupUuid').text(),
        'customerOrderPosition' => {'quantity' => i.xpath('customerOrderPosition/@quantity').text(),
                                    'goodUuid' => i.xpath('customerOrderPosition/@goodUuid').text(),
-                                   'basePrice' =>i.xpath('customerOrderPosition/basePrice/@sum').text(),
+                                   'basePrice' =>(i.xpath('customerOrderPosition/basePrice/@sum').text().to_d)/100,
+                                   'sum' =>(i.xpath('sum/@sum').text().to_d)/100,
                                    'sourceAgentUuid' => i.xpath('@sourceAgentUuid').text() },
       }
 
@@ -24,20 +25,24 @@ module MyWarehouse
           Order.create(:uuid => order_my_warehouse["uuid"],
                        :good_id => order_my_warehouse['customerOrderPosition']['goodUuid'],
                        :agent_id => order_my_warehouse['customerOrderPosition']['sourceAgentUuid'],
-                       :quantity => order_my_warehouse['customerOrderPosition']['quantity'])
+                       :quantity => order_my_warehouse['customerOrderPosition']['quantity'],
+                       :base_price => order_my_warehouse['customerOrderPosition']['basePrice'],
+                       :sum => order_my_warehouse['customerOrderPosition']['sum'])
           puts "Order created"
         else
           query = Order.find_by(:uuid => order_my_warehouse["uuid"])
           query.update(:good_id => order_my_warehouse['customerOrderPosition']['goodUuid'],
                        :agent_id => order_my_warehouse['customerOrderPosition']['sourceAgentUuid'],
-                       :quantity => order_my_warehouse['customerOrderPosition']['quantity'])
+                       :quantity => order_my_warehouse['customerOrderPosition']['quantity'],
+                       :base_price => order_my_warehouse['customerOrderPosition']['basePrice'],
+                       :sum => order_my_warehouse['customerOrderPosition']['sum'])
           puts "Order updated"
         end
 
       end
       delete_orders(@orders_my_warehouse)
-
     end
+
 
   end
 

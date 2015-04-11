@@ -1,3 +1,50 @@
+GIT
+  remote: git://github.com/rspec/rspec-core.git
+  revision: bd6f7fd2e8d9153a4dd44dbf068be205d5890df1
+  branch: master
+  specs:
+    rspec-core (3.3.0.pre)
+      rspec-support (= 3.3.0.pre)
+
+GIT
+  remote: git://github.com/rspec/rspec-expectations.git
+  revision: f0b79d1e58bcc209191bfc99a04211dd38718955
+  branch: master
+  specs:
+    rspec-expectations (3.3.0.pre)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (= 3.3.0.pre)
+
+GIT
+  remote: git://github.com/rspec/rspec-mocks.git
+  revision: 511071e44df50f2ec3a3d4e93eb3743ca5125086
+  branch: master
+  specs:
+    rspec-mocks (3.3.0.pre)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (= 3.3.0.pre)
+
+GIT
+  remote: git://github.com/rspec/rspec-rails.git
+  revision: fba0669b86d2d1c65b3efc7b14703046cbbe200e
+  branch: master
+  specs:
+    rspec-rails (3.3.0.pre)
+      actionpack (>= 3.0, < 4.3)
+      activesupport (>= 3.0, < 4.3)
+      railties (>= 3.0, < 4.3)
+      rspec-core (= 3.3.0.pre)
+      rspec-expectations (= 3.3.0.pre)
+      rspec-mocks (= 3.3.0.pre)
+      rspec-support (= 3.3.0.pre)
+
+GIT
+  remote: git://github.com/rspec/rspec-support.git
+  revision: f5078608f07474c8d4c94d15562525d85c55595c
+  branch: master
+  specs:
+    rspec-support (3.3.0.pre)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -52,8 +99,11 @@ GEM
     coffee-script-source (1.9.1)
     columnize (0.9.0)
     debug_inspector (0.0.2)
+    diff-lcs (1.2.5)
     erubis (2.7.0)
     execjs (2.5.1)
+    factory_girl (4.5.0)
+      activesupport (>= 3.0.0)
     globalid (0.3.5)
       activesupport (>= 4.1.0)
     hike (1.2.3)
@@ -155,11 +205,17 @@ PLATFORMS
 DEPENDENCIES
   byebug
   coffee-rails (~> 4.1.0)
+  factory_girl
   httparty
   jbuilder (~> 2.0)
   jquery-rails
   nokogiri
   rails (= 4.2.0)
+  rspec-core!
+  rspec-expectations!
+  rspec-mocks!
+  rspec-rails!
+  rspec-support!
   sass-rails (~> 5.0)
   sdoc (~> 0.4.0)
   spring
