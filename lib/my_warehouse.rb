@@ -49,7 +49,7 @@ module MyWarehouse
   def self.delete_orders(orders_my_warehouse)
     @orders = Order.all
     @orders.each do |order|
-      unless orders_my_warehouse.select {|hash| hash["uuid"] == order.uuid }
+      if (orders_my_warehouse.select {|hash| hash["uuid"] == order.uuid }).blank?
         Order.delete(order.id)
         puts "Order deleted"
       end
