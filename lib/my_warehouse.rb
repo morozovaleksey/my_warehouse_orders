@@ -3,13 +3,48 @@ require 'nokogiri'
 require 'net/http'
 
 module MyWarehouse
+  @@company = {"moy_sklad_login" => "admin@morozovaleksey", "moy_sklad_password" => "e7c62590986" }
 
   def self.upload_orders
-    company = {"moy_sklad_login" => "admin@morozovaleksey", "moy_sklad_password" => "e7c625909866" }
-    response = moy_sklad_get('CustomerOrder','list', company)
+    response = self.moy_sklad_get('CustomerOrder',"list?start=0&count=1000", @@company)
     doc = Nokogiri::XML(response.body)
-    @orders_my_warehouse = doc.xpath('//collection/customerOrder').map do |i|
-      {'uuid' => i.xpath('uuid').text(),'groupUuid' => i.xpath('groupUuid').text(),
+    total = doc.xpath('//collection/@total').text().to_i
+    self.fill_orders(doc)
+    if total > 1000
+      counter = 1
+      count_response = total/1000
+      while count_response >= counter
+        response = self.moy_sklad_get('CustomerOrder',"list?start=#{counter*1000}&count=1000", @@company)
+        doc = Nokogiri::XML(response.body)
+        self.fill_orders(doc)
+        counter+=1
+      end
+    end
+
+  end
+
+  def self.upload_latest_orders
+    time = Date.today
+    time_day_ago = time - 1
+    response = self.moy_sklad_get('CustomerOrder',"#{URI.encode("list?start=0&count=1000&filter=updated>#{time_day_ago.year}#{time_day_ago.strftime('%m')}#{time_day_ago.strftime('%d')}010000")}", @@company)
+    doc = Nokogiri::XML(response.body)
+    total = doc.xpath('//collection/@total').text().to_i
+    self.fill_orders(doc)
+    if total > 1000
+      counter = 1
+      count_response = total/1000
+      while count_response >= counter
+        response = self.moy_sklad_get('CustomerOrder',"#{URI.encode("list?start=#{counter*1000}&count=1000&filter=updated>#{time_day_ago.year}#{time_day_ago.strftime('%m')}#{time_day_ago.strftime('%d')}010000")}", @company)
+        doc = Nokogiri::XML(response.body)
+        self.fill_orders(doc)
+        counter+=1
+      end
+    end
+  end
+
+  def self.fill_orders doc
+    orders_my_warehouse = doc.xpath('//collection/customerOrder').map do |i|
+      {'uuid' => i.xpath('uuid').text(),'groupUuid' => i.xpath('groupUuid').text(),'updated' => i.xpath('@updated').text().split('T')[0],
        'customerOrderPosition' => {'quantity' => i.xpath('customerOrderPosition/@quantity').text(),
                                    'goodUuid' => i.xpath('customerOrderPosition/@goodUuid').text(),
                                    'basePrice' =>(i.xpath('customerOrderPosition/basePrice/@sum').text().to_d)/100,
@@ -18,9 +53,8 @@ module MyWarehouse
       }
 
     end
-    puts "Orders parsed"
-    unless @orders_my_warehouse.blank?
-      @orders_my_warehouse.each do |order_my_warehouse|
+    unless orders_my_warehouse.blank?
+      orders_my_warehouse.each do |order_my_warehouse|
         if Order.where(:uuid => order_my_warehouse["uuid"]).blank?
           Order.create(:uuid => order_my_warehouse["uuid"],
                        :good_id => order_my_warehouse['customerOrderPosition']['goodUuid'],
@@ -28,7 +62,7 @@ module MyWarehouse
                        :quantity => order_my_warehouse['customerOrderPosition']['quantity'],
                        :base_price => order_my_warehouse['customerOrderPosition']['basePrice'],
                        :sum => order_my_warehouse['customerOrderPosition']['sum'])
-          puts "Order created"
+
         else
           query = Order.find_by(:uuid => order_my_warehouse["uuid"])
           query.update(:good_id => order_my_warehouse['customerOrderPosition']['goodUuid'],
@@ -36,14 +70,11 @@ module MyWarehouse
                        :quantity => order_my_warehouse['customerOrderPosition']['quantity'],
                        :base_price => order_my_warehouse['customerOrderPosition']['basePrice'],
                        :sum => order_my_warehouse['customerOrderPosition']['sum'])
-          puts "Order updated"
+
         end
-
       end
-      delete_orders(@orders_my_warehouse)
     end
-
-
+    return orders_my_warehouse
   end
 
   def self.delete_orders(orders_my_warehouse)

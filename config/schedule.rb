@@ -14,7 +14,7 @@
 # end
 #
 every 1.minute do
-  runner "MyWarehouse.upload_orders"
+  runner "MyWarehouse.upload_latest_orders"
 end
 
 # Learn more: http://github.com/javan/whenever
